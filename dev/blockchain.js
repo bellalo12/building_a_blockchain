@@ -48,9 +48,10 @@ Blockchain.prototype.addTransactionToPendingTransactions = function(transactionO
 };
 
 Blockchain.prototype.hashBlock = function(previousBlockHash, currentBlockData, nonce) {
-  const dataAsString = previousBlockHash + nonce.toString()+JSON.stringify(currentBlockData)
+  const dataAsString = previousBlockHash+ nonce.toString()+JSON.stringify(currentBlockData);
   const hash = sha256(dataAsString);
   return hash;
+
 }
 
 Blockchain.prototype.proofOfWork = function(previousBlockHash, currentBlockData) {
@@ -62,10 +63,32 @@ Blockchain.prototype.proofOfWork = function(previousBlockHash, currentBlockData)
   }
   return nonce;
 }
+
+Blockchain.prototype.chainIsValid = function(blockchain){
+  let validChain = true;
+
+  for (var i=1; i<blockchain.length; i++){
+    const currentBlock = blockchain[i];
+    const prevBlock = blockchain[i-1];
+    const blockHash = this.hashBlock(prevBlock['hash'], {transactions: currentBlock['transactions'], index: currentBlock['index']}, currentBlock['nonce']);
+    if(blockHash.substring(0,4) !== '0000') validChain = false;
+    if(currentBlock['previousBlockHash'] !== prevBlock['hash']) validChain =false;
+  };
+
+  const genesisBlock = blockchain[0];
+  const correctNonce = genesisBlock['nonce'] === 100;
+  const correctPreviousBlockHash = genesisBlock['previousBlockHash'] === '0';
+  const correctHash = genesisBlock['hash'] === '0';
+  const correctTransactions = genesisBlock['transactions'].length === 0;
+
+  if(!correctNonce || !correctPreviousBlockHash || !correctHash || !correctTransactions) validChain=false;
+
+  return validChain;
+};
+
+module.exports = Blockchain;
 //bitcoin.hashBlock(previousBlockHash, currentBlockData, nonce);
 //=>repeatedly hash block until it finds correct hash => '00003IJLO423' , that start with 0000
 //=>uses current block data for the hash, but also the previousBlockHash
 //=>continously changes nonce value until it finds the correct hashBlock
 //=>return to us the nonce value that create the correct hash
-
-module.exports = Blockchain;
