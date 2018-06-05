@@ -207,6 +207,34 @@ app.get('/consensus', (req, res)=>{
   });
 });
 
+app.get('/block/:blockHash', (req, res)=>{  //localhost:3001/block/alsoi302jagj0293
+  const blockHash = req.params.blockHash;
+  const correctBlock = bitcoin.getBlock(blockHash);
+  res.json({
+    block: correctBlock
+  });
+});
+
+app.get('/transaction/:transactionId', (req, res)=>{
+  const transactionId = req.params.transactionId;
+  const transactionData = bitcoin.getTransaction(transactionId);
+  res.json({
+    transaction: transactionData.transaction,
+    block: transactionData.block
+  });
+});
+
+app.get('/address/:address', (req, res)=>{
+  const address = req.params.address;
+  const addressData = bitcoin.getAddressData(address);
+  res.json({
+    addressData: addressData
+  });
+});
+
+app.get('/block-explorer', (req, res)=>{
+  res.sendFile('./block-explorer/index.html', {root:__dirname});
+});
 
 
 app.listen(port, ()=>{
